@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: bus
+  jackson:
+    default-property-inclusion: non_null
+    property-naming-strategy: SNAKE_CASE
+  datasource:
+    url: jdbc:mysql://localhost:3306/civa
+    username: ${DB_USERNAME_MYSQL}
+    password: ${DB_PASSWORD_MYSQL}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true

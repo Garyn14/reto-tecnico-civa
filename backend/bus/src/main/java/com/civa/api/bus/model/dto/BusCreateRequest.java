@@ -8,7 +8,7 @@ import lombok.*;
 public class BusCreateRequest {
     @NotNull(message = "Bus number is required")
     @Min(value = 1, message = "bus number must be greater than or equals to 0")
-    @Max(value = 100, message = "bus number must be less than or equals to 100")
+    @Max(value = 1000, message = "bus number must be less than or equals to 1000")
     private Integer busNumber;
 
     @Size(min = 5, max = 10, message = "license plate must be between 5 and 10 characters")

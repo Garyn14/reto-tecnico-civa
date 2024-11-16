@@ -31,4 +31,9 @@ public class Bus {
     @ManyToOne
     @JoinColumn(name = "brand_id", columnDefinition = "BIT(1) default 0")
     private Brand brand;
+
+    @PrePersist
+    public void prePersist() {
+        this.creationDate = LocalDateTime.now();
+    }
 }

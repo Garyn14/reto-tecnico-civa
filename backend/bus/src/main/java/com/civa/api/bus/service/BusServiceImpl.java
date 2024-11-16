@@ -9,8 +9,11 @@ import com.civa.api.bus.model.entity.Bus;
 import com.civa.api.bus.repository.BrandRepository;
 import com.civa.api.bus.repository.BusRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -31,6 +34,21 @@ public class BusServiceImpl implements BusService{
     @Override
     public List<BusResponse> findAll() {
         return busRepository.findAll()
+                .stream()
+                .map(busMapper::toBusResponse)
+                .toList();
+    }
+
+    @Override
+    public Page<BusResponse> findAll(Pageable pageable) {
+        return busRepository.findAll(pageable)
+                .map(busMapper::toBusResponse);
+    }
+
+    @Override
+    public List<BusResponse> findAllByLicensePlate(String licensePlate) {
+        if (licensePlate.isEmpty() || licensePlate.isBlank()) return Collections.emptyList();
+        return busRepository.findAllByLicensePlateStartingWith(licensePlate)
                 .stream()
                 .map(busMapper::toBusResponse)
                 .toList();

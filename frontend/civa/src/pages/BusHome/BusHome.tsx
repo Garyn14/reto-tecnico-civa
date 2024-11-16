@@ -23,7 +23,6 @@ const TABLE_COLUMNS = [
   "Hora de Creación",
 ];
 
-// Formatea los datos de los buses para la tabla
 const formatBusData = (buses: Bus[]) => {
   return buses.map((bus) => ({
     ID: bus.id,
@@ -45,12 +44,15 @@ const BusList: React.FC = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSearchMode, setIsSearchMode] = useState(false);
   const pageSize = 10;
 
-  // Función para cargar buses paginados
   const getPagedBuses = async (page: number) => {
+    if (isSearchMode) return; // No realiza la paginación en modo búsqueda
+
     setLoading(true);
     setError(null);
+
     try {
       const data: PagedResponse = await fetchPagedBuses(page, pageSize);
       setBuses(data.content);
@@ -63,21 +65,31 @@ const BusList: React.FC = () => {
       setLoading(false);
     }
   };
+  
 
-  // Función para manejar búsquedas
   const handleSearch = async (query: string, filter: string) => {
     setLoading(true);
     setError(null);
+    setIsSearchMode(true);
+    setCurrentPage(0);
+
     try {
-      const data =
-        filter === "ID"
-          ? [await fetchBusById(Number(query))]
-          : await fetchBusesByPlate(query);
-      setBuses(data);
-      setTotalPages(1);
+      let results: Bus[] = [];
+      if (filter === "ID") {
+        const bus = await fetchBusById(Number(query));
+        results = [bus];
+      } else if (filter === "Placa") {
+        results = await fetchBusesByPlate(query);
+      }
+
+      setBuses(results);
+      setTotalPages(1); // Solo una página de resultados en modo búsqueda
       setIsFirstPage(true);
       setIsLastPage(true);
-      setCurrentPage(0); // Resetea a la primera página
+
+      if (results.length === 0) {
+        setError("No se encontraron buses que coincidan con el criterio.");
+      }
     } catch (err: any) {
       setError(
         err.message === "Bus not found"
@@ -90,16 +102,24 @@ const BusList: React.FC = () => {
     }
   };
 
-  // Llamada inicial para cargar buses
+  const handleClearFilter = async () => {
+    setError(null);
+    setIsSearchMode(false); // Desactiva el modo búsqueda
+    setCurrentPage(0); // Reinicia a la primera página
+    await getPagedBuses(0); // Carga los datos iniciales
+  };
+
   useEffect(() => {
-    getPagedBuses(currentPage);
-  }, [currentPage]);
+    if (!isSearchMode) {
+      getPagedBuses(currentPage);
+    }
+  }, [currentPage, isSearchMode]);
 
   return (
     <div
       className="min-h-screen bg-cover bg-center bg-no-repeat"
       style={{
-        backgroundImage: "url('/public/fondo2.png')", // Cambia según tu ruta de imagen
+        backgroundImage: "url('/public/fondo.png')",
       }}
     >
       {/* Encabezado */}
@@ -108,39 +128,33 @@ const BusList: React.FC = () => {
         userInfo={{ name: "Fernando R.", role: "Admin" }}
       />
 
-      {/* Contenido principal */}
       <div className="flex flex-col items-center justify-center min-h-screen p-4 pt-20">
-        {/* Barra de búsqueda */}
         <div className="w-full max-w-4xl mb-8">
           <SearchBar
             placeholder="Buscar"
             filterOptions={["Placa", "ID"]}
             onSearch={handleSearch}
-            onClear={() => getPagedBuses(0)}
+            onClear={handleClearFilter}
           />
         </div>
 
-        {/* Mensajes de carga y error */}
-        {loading && <p aria-live="polite">Cargando datos...</p>}
+        {loading && <p aria-live="polite" className="font-bold">Cargando datos...</p>}
         {error && (
-          <p aria-live="assertive" className="text-red-500">
+          <p aria-live="assertive" className="text-red-500 font-bold">
             {error}
           </p>
         )}
 
-        {/* Tabla */}
         {!loading && !error && buses.length > 0 && (
           <section className="w-full bg-white border border-gray-300 rounded-lg shadow-md p-4 overflow-x-auto max-w-4xl">
             <Table columns={TABLE_COLUMNS} data={formatBusData(buses)} />
           </section>
         )}
 
-        {/* Mensaje si no hay datos */}
         {!loading && !error && buses.length === 0 && (
-          <p className="text-gray-500">No se encontraron datos para mostrar.</p>
+          <p className="text-gray-500 font-bold">No se encontraron datos para mostrar.</p>
         )}
 
-        {/* Paginación */}
         <Pagination
           currentPage={currentPage}
           isFirstPage={isFirstPage}

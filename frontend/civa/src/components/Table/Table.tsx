@@ -1,13 +1,13 @@
 interface TableProps<T> {
-    columns: string[]; // Encabezados de la tabla
-    data: T[]; // Datos en formato de array de objetos con un tipo genérico
+    columns: string[];
+    data: T[];
   }
   
   const Table = <T extends Record<string, unknown>>({ columns, data }: TableProps<T>) => {
     return (
       <div className="overflow-x-auto">
         <table className="min-w-full border-collapse border border-gray-300">
-          {/* Encabezado */}
+
           <thead className="bg-gray-200">
             <tr>
               {columns.map((col) => (
@@ -21,7 +21,6 @@ interface TableProps<T> {
             </tr>
           </thead>
   
-          {/* Cuerpo */}
           <tbody>
             {data.length > 0 ? (
               data.map((row, index) => (
@@ -34,7 +33,7 @@ interface TableProps<T> {
                       key={col}
                       className="border border-gray-300 px-4 py-2 text-sm text-gray-700"
                     >
-                      {String(row[col as keyof T] ?? "-")} {/* Asegura compatibilidad */}
+                      {String(row[col as keyof T] ?? "-")}
                     </td>
                   ))}
                 </tr>
@@ -43,7 +42,7 @@ interface TableProps<T> {
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="text-center py-4 text-gray-500"
+                  className="text-center py-4 text-gray-500 font-bold"
                 >
                   No hay datos disponibles.
                 </td>
